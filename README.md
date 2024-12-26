@@ -81,9 +81,3 @@ Once the bot is in your server, in chat type the following:
 ![groupbuy_channels](/README_assets/groupbuy_channels.png)
 ![command_create_modal](/README_assets/command_create_modal.png)
 ![channel_botchat](/README_assets/channel_botchat.png)
-
-
-## Development
-
-##### TODO:
-* Add */command* to change `groupbuy.open_at_amount`
