@@ -116,14 +116,6 @@ const Users = sequelize.define('user', {
 		type: Sequelize.INTEGER,
 		defaultValue: 0,
 	},
-	pledged: {
-		type: Sequelize.INTEGER,
-		defaultValue: 0,
-	},
-	pledged_amount: {
-		type: Sequelize.DOUBLE,
-		defaultValue: 0,
-	},
 	paid: {
 		type: Sequelize.INTEGER,
 		defaultValue: 0,
@@ -242,33 +234,6 @@ client.on('guildMemberRemove', async member => {
 			Groupbuys.update({ paid: amount.value }, { where: { guild_id: message.guildId } });
 			const channel_paidamount = await client.channels.fetch(groupbuy.channel_paidamount);
 			channel_paidamount.setName(`${amount.format(true)}/${currency(groupbuy.price).format(true)}`);
-		}
-		if (member.partial || member.roles.cache.has(groupbuy.role_pledged)) {
-			const channel = await client.channels.fetch(groupbuy.channel_pledges);
-			let lastMessageId = channel.lastMessageId;
-			let messages;
-
-			do {
-				messages = await channel.messages.fetch({
-					limit: 100,
-					before: lastMessageId,
-				});
-				messages = messages.filter(message => message.author.id === member.id);
-				for (let message_fetched of messages.values()) {
-					amount = amount.add(currency(message_fetched.content.split(' ')[0]));
-					lastMessageId = message_fetched.id;
-					await message_fetched.delete();
-				}
-			} while (messages.size == 100);
-
-			const channel_botchat = await client.channels.fetch(groupbuy.channel_botchat);
-			const embed = new Discord.MessageEmbed().setDescription(`${member.toString()}'s pledge of ${currency(groupbuy.pledged).subtract(amount).format(true)} has been removed as they left the server.`).setColor('RED');
-			channel_botchat.send({ embeds: [embed] });
-
-
-			Groupbuys.update({ pledged: amount.value }, { where: { guild_id: member.guild.id } });
-			const channel_pledgeamount = await member.guild.channels.fetch(groupbuy.channel_pledgeamount);
-			channel_pledgeamount.setName(`${amount.format(true)}/${currency(groupbuy.price).format(true)}`);
 		}
 	}
 
@@ -712,7 +677,6 @@ client.on('messageCreate', async message => {
 			if (currency(groupbuy.pledged).value >= currency(groupbuy.price).value || currency(groupbuy.pledged).value >= currency(groupbuy.open_at_amount).value) {
 				const guild = await client.guilds.fetch(groupbuy.guild_id);
 				const category_pledge = await guild.channels.fetch(groupbuy.category_pledge);
-				const channel_pledges = guild.channels.cache.get(groupbuy.channel_pledges);
 				const category_payment = await guild.channels.fetch(groupbuy.category_payment);
 				const channel_paymentinfo = guild.channels.cache.get(groupbuy.channel_paymentinfo);
 				const channel_paidscreenshot = guild.channels.cache.get(groupbuy.channel_paidscreenshot);
@@ -734,14 +698,6 @@ client.on('messageCreate', async message => {
 					allow: ['SEND_MESSAGES', 'ATTACH_FILES', 'VIEW_CHANNEL'],
 					deny: ['READ_MESSAGE_HISTORY'],
 				}]);
-
-				category_pledge.setName('pledge (closed)');
-				await category_pledge.permissionOverwrites.set([{
-					id: message.guild.roles.everyone,
-					deny: ['SEND_MESSAGES'],
-				}]);
-				channel_pledges.lockPermissions();
-
 
 				const embed_announcement = new Discord.MessageEmbed().setDescription(`${channel_paymentinfo.toString()} is open. *Start paying!*`).setColor('GREEN')
 				channel_announcements.send({
@@ -915,8 +871,8 @@ client.on('interactionCreate', async interaction => {
 			let role_owner;
 			await interaction.guild.roles.create({
 				name: 'Owner',
-				color: 'PURPLE',
-				hoist: true,
+				color: 'PURPLE', // color options
+				hoist: true, // hoist = appear seperately from other memebers
 				permissions: ['ADMINISTRATOR']
 			}).then(async role => {
 				role_owner = role;
@@ -926,8 +882,8 @@ client.on('interactionCreate', async interaction => {
 			let role_coordinator;
 			await interaction.guild.roles.create({
 				name: 'Coordinator',
-				color: 'DARK_GREY',
-				hoist: true,
+				color: 'DARK_PURPLE',
+				hoist: true, 
 				permissions: ['ADMINISTRATOR']
 			}).then(async role => {
 				role_coordinator = role;
@@ -964,7 +920,7 @@ client.on('interactionCreate', async interaction => {
 			});
 			let role_middleman;
 			await interaction.guild.roles.create({
-				name: 'Middleman',
+				name: 'Middleman/Holder',
 				color: 'DARK_GREEN',
 				permissions: ['ADMINISTRATOR']
 			}).then(async role => {
@@ -973,7 +929,7 @@ client.on('interactionCreate', async interaction => {
 			});
 			let role_collector;
 			await interaction.guild.roles.create({
-				name: 'Collector',
+				name: 'EXTRA_ROLE-role_collector',
 				color: 'ORANGE',
 				hoist: true,
 			}).then(async role => {
@@ -991,7 +947,7 @@ client.on('interactionCreate', async interaction => {
 			});
 			let role_pledged;
 			await interaction.guild.roles.create({
-				name: 'Pledged',
+				name: 'EXTRA_ROLE-role_pledged',
 				color: 'GOLD',
 				hoist: true,
 				mentionable: true
@@ -1001,7 +957,7 @@ client.on('interactionCreate', async interaction => {
 			});
 			let role_nopledge;
 			await interaction.guild.roles.create({
-				name: 'No Pledge',
+				name: 'Unpaid',
 				color: 'RED',
 				hoist: true,
 				mentionable: true
@@ -1168,14 +1124,14 @@ client.on('interactionCreate', async interaction => {
 			})
 
 			let category_payment;
-			await interaction.guild.channels.create('payment (closed)', {
+			await interaction.guild.channels.create('payment', {
 				type: 'GUILD_CATEGORY',
 				position: 8,
 				permissionOverwrites: [{
-					id: role_moderator,
+					id: interaction.guild.roles.everyone,
 					allow: ['VIEW_CHANNEL'],
 				}, {
-					id: interaction.guild.roles.everyone,
+					id: role_moderator,
 					deny: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
 				}],
 			}).then(async channel => {
@@ -1190,11 +1146,11 @@ client.on('interactionCreate', async interaction => {
 				topic: 'Payment information is available here.',
 				parent: category_payment,
 				permissionOverwrites: [{
-					id: role_moderator,
+					id: interaction.guild.roles.everyone,
 					allow: ['VIEW_CHANNEL'],
 				}, {
 					id: interaction.guild.roles.everyone,
-					deny: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
+					deny: ['SEND_MESSAGES'],
 				}],
 			}).then(async channel => {
 				channel_paymentinfo = channel;
@@ -1221,8 +1177,8 @@ client.on('interactionCreate', async interaction => {
 				rateLimitPerUser: 10,
 				permissionOverwrites: [{
 					id: interaction.guild.roles.everyone,
-					allow: ['SEND_MESSAGES', 'ATTACH_FILES'],
-					deny: ['VIEW_CHANNEL', 'READ_MESSAGE_HISTORY'],
+					allow: ['SEND_MESSAGES', 'ATTACH_FILES', 'VIEW_CHANNEL'],
+					deny: ['READ_MESSAGE_HISTORY'],
 				}],
 			}).then(async channel => {
 				channel_paidscreenshot = channel;
@@ -1242,44 +1198,6 @@ client.on('interactionCreate', async interaction => {
 			}).then(async channel => {
 				channel_paidamount = channel;
 				groupbuy.update({ channel_paidamount: channel.id }, { where: { guild_id: interaction.guild.id } });
-			});
-
-			let category_pledge;
-			await interaction.guild.channels.create('pledge', {
-				type: 'GUILD_CATEGORY',
-				position: 12,
-			}).then(async channel => {
-				groupbuy.update({ category_pledge: channel.id }, { where: { guild_id: interaction.guild.id } });
-				category_pledge = channel.id;
-			});
-
-			let channel_pledges;
-			await interaction.guild.channels.create('pledges', {
-				type: 'GUILD_TEXT',
-				position: 13,
-				parent: category_pledge,
-				rateLimitPerUser: 10,
-				permissionOverwrites: [{
-					id: interaction.guild.roles.everyone,
-					allow: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
-				}],
-			}).then(async channel => {
-				channel_pledges = channel;
-				groupbuy.update({ channel_pledges: channel.id }, { where: { guild_id: interaction.guild.id } });
-			});
-
-			let channel_pledgeamount;
-			await interaction.guild.channels.create(`$0.00/${currency(price).format(true)}`, {
-				type: 'GUILD_VOICE',
-				position: 14,
-				parent: category_pledge,
-				permissionOverwrites: [{
-					id: interaction.guild.roles.everyone,
-					deny: ['CONNECT'],
-				}],
-			}).then(async channel => {
-				channel_pledgeamount = channel;
-				groupbuy.update({ channel_pledgeamount: channel.id }, { where: { guild_id: interaction.guild.id } });
 			});
 
 			let category_chat;
@@ -1438,12 +1356,6 @@ client.on('interactionCreate', async interaction => {
 						case 'banned':
 							embed.setDescription(`${embed.description ? embed.description : ''}` + `\n${bold('Banned')}: ${value} `);
 							break;
-						case 'pledged':
-							embed.setDescription(`${embed.description ? embed.description : ''}` + `\n${bold('Pledged')}: ${value} `);
-							break;
-						case 'pledged_amount':
-							embed.setDescription(`${embed.description ? embed.description : ''}` + `${inlineCode(`(${currency(value).format(true)})`)}`);
-							break;
 						case 'paid':
 							embed.setDescription(`${embed.description ? embed.description : ''}` + `\n${bold('Paid')}: ${value} `);
 							break;
@@ -1510,19 +1422,6 @@ async function set_channel_paidamount(groupbuy, amount) {
 	const guild = await client.guilds.fetch(groupbuy.guild_id);
 	const channel_paidamount = guild.channels.cache.get(groupbuy.channel_paidamount);
 	channel_paidamount.setName(`${currency(paid).format(true)}/${currency(price).format(true)}`);
-}
-
-async function set_channel_pledgeamount(groupbuy, amount) {
-
-	let pledged = currency(groupbuy.pledged).value;
-	const price = currency(groupbuy.price).value;
-
-	pledged = currency(pledged).add(amount).value;
-	groupbuy.update({ pledged: pledged });
-
-	const guild = await client.guilds.fetch(groupbuy.guild_id);
-	const channel_pledgeamount = guild.channels.cache.get(groupbuy.channel_pledgeamount);
-	channel_pledgeamount.setName(`${currency(pledged).format(true)}/${currency(price).format(true)}`);
 }
 
 // check if member is perm banned
