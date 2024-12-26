@@ -212,7 +212,6 @@ module.exports = {
                     }]);
                 }
                 else {
-                    category_pledge.setName('pledge');
                     category_payment.setName('payment (closed)');
 
                     category_payment.permissionOverwrites.set([{
@@ -220,27 +219,20 @@ module.exports = {
                         allow: ['VIEW_CHANNEL'],
                     }, {
                         id: interaction.guild.roles.everyone,
-                        deny: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
+                        deny: ['SEND_MESSAGES'],
                     }]);
                     channel_paymentinfo.permissionOverwrites.set([{
                         id: groupbuy.role_moderator,
-                        allow: ['VIEW_CHANNEL'],
+                        allow: ['SEND_MESSAGES'],
                     }, {
                         id: interaction.guild.roles.everyone,
-                        deny: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
+                        deny: ['SEND_MESSAGES'],
+						allow: ['VIEW_CHANNEL'],
                     }]);
                     channel_paidscreenshot.permissionOverwrites.set([{
                         id: interaction.guild.roles.everyone,
-                        allow: ['SEND_MESSAGES', 'ATTACH_FILES'],
-                        deny: ['VIEW_CHANNEL', 'READ_MESSAGE_HISTORY'],
-                    }]);
-                    category_pledge.permissionOverwrites.set([{
-                        id: interaction.guild.roles.everyone,
-                        deny: ['SEND_MESSAGES'],
-                    }]);
-                    channel_pledges.permissionOverwrites.set([{
-                        id: interaction.guild.roles.everyone,
-                        allow: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
+                        allow: ['SEND_MESSAGES', 'ATTACH_FILES', 'VIEW_CHANNEL'],
+                        deny: ['READ_MESSAGE_HISTORY'],
                     }]);
                 }                
             }
@@ -250,24 +242,17 @@ module.exports = {
                 category_payment.permissionOverwrites.set([{
                     id: interaction.guild.roles.everyone,
                     deny: ['SEND_MESSAGES'],
+					allow: ['VIEW_CHANNEL'],
                 }]);
                 channel_paymentinfo.permissionOverwrites.set([{
                     id: interaction.guild.roles.everyone,
                     deny: ['SEND_MESSAGES'],
+					allow: ['VIEW_CHANNEL'],
                 }]);
                 channel_paidscreenshot.permissionOverwrites.set([{
                     id: interaction.guild.roles.everyone,
                     deny: ['SEND_MESSAGES'],
-                }]);
-
-                category_pledge.setName('pledge (closed)');
-                category_pledge.permissionOverwrites.set([{
-                    id: interaction.guild.roles.everyone,
-                    deny: ['SEND_MESSAGES'],
-                }]);
-                channel_pledges.permissionOverwrites.set([{
-                    id: interaction.guild.roles.everyone,
-                    deny: ['SEND_MESSAGES'],
+					allow: ['VIEW_CHANNEL'],
                 }]);
                 announcementEmbed.setDescription(`Groupbuy has been closed by ${interaction.member.toString()}.`);
             }
