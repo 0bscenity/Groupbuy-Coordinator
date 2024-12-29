@@ -852,7 +852,7 @@ client.on('interactionCreate', async interaction => {
 			})
 			await wait(3000);
 
-			interaction.guild.setName(`${artist} - ${title} Groupbuy`);
+			interaction.guild.setName(`DG6M5S01B for BluRay CD DVD`); //CHANGE THIS TO THE TITLE
 			interaction.guild.setVerificationLevel('LOW', 'Reduce Alts and Trolls');
 			interaction.guild.setDefaultMessageNotifications('ONLY_MENTIONS');
 
