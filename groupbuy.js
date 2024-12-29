@@ -852,7 +852,7 @@ client.on('interactionCreate', async interaction => {
 			})
 			await wait(3000);
 
-			interaction.guild.setName(`DG6M5S01B for BluRay CD DVD`); //CHANGE THIS TO THE TITLE
+			interaction.guild.setName(`cash rules everything around me (CREAM)`); //CHANGE THIS TO THE TITLE
 			interaction.guild.setVerificationLevel('LOW', 'Reduce Alts and Trolls');
 			interaction.guild.setDefaultMessageNotifications('ONLY_MENTIONS');
 
@@ -1155,7 +1155,9 @@ client.on('interactionCreate', async interaction => {
 			}).then(async channel => {
 				channel_paymentinfo = channel;
 				groupbuy.update({ channel_paymentinfo: channel.id }, { where: { guild_id: interaction.guild.id } });
-
+				
+				const DO_NOT = '# DO __**NOT**__ INCLUDE ANYTHING RELATED TO THE GB IN PAYMENT NOTES';
+				
 				const embed = new Discord.MessageEmbed()
 					.setColor('BLURPLE')
 					.setAuthor({
@@ -1163,10 +1165,13 @@ client.on('interactionCreate', async interaction => {
 					})
 					.setDescription(`${inlineCode('/payment add')} to add a payment service.`)
 
+
 				const message = await channel.send({
 					embeds: [embed]
 				});
 				groupbuy.update({ message_payment_information: message.id }, { where: { guild_id: interaction.guild.id } });
+				
+				channel_paymentinfo.send(DO_NOT)
 			});
 
 			let channel_paidscreenshot;
