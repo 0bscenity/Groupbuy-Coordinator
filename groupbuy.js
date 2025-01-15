@@ -68,7 +68,7 @@ const Groupbuys = sequelize.define('groupbuy', {
 	role_moderator: Sequelize.STRING,
 	role_seller: Sequelize.STRING,
 	role_middleman: Sequelize.STRING,
-	role_collector: Sequelize.STRING,
+	//role_collector: Sequelize.STRING,
 	role_paid: Sequelize.STRING,
 	role_pledged: Sequelize.STRING,
 	role_nopledge: Sequelize.STRING,
@@ -312,7 +312,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	const member = await reaction.message.guild.members.fetch(user.id);
 	const channel_botchat = await reaction.message.guild.channels.fetch(groupbuy.channel_botchat);
 
-	if (reaction.emoji.name == '✅' && reaction.me && member.roles.cache.hasAny(groupbuy.role_coordinator, groupbuy.role_administrator, groupbuy.role_moderator, groupbuy.role_collector)) {
+	if (reaction.emoji.name == '✅' && reaction.me && member.roles.cache.hasAny(groupbuy.role_coordinator, groupbuy.role_administrator, groupbuy.role_moderator/*, groupbuy.role_collector*/)) {
 		const amount = currency(reaction.message.content.split(' ')[0]).value;
 		await reaction.message.reactions.resolve(reaction).remove();
 		let embed;
@@ -927,15 +927,15 @@ client.on('interactionCreate', async interaction => {
 				role_middleman = role;
 				groupbuy.update({ role_middleman: role.id }, { where: { guild_id: interaction.guild.id } });
 			});
-			let role_collector;
+			/*let role_collector;
 			await interaction.guild.roles.create({
 				name: 'EXTRA_ROLE-role_collector',
 				color: 'ORANGE',
 				hoist: true,
 			}).then(async role => {
 				role_collector = role;
-				groupbuy.update({ role_collector: role.id }, { where: { guild_id: interaction.guild.id } });
-			});
+				groupbuy.update({ role_collector: role.id }, { where: { guild_id: interaction.guild.id } }); 
+			});*/
 			let role_paid;
 			await interaction.guild.roles.create({
 				name: 'Paid',
@@ -1110,9 +1110,9 @@ client.on('interactionCreate', async interaction => {
 				}, {
 					id: role_moderator,
 					allow: ['VIEW_CHANNEL'],
-				}, {
+				/*}, {
 					id: role_collector,
-					allow: ['VIEW_CHANNEL'],
+					allow: ['VIEW_CHANNEL'], */
 				}, {
 					id: interaction.guild.roles.everyone,
 					deny: ['SEND_MESSAGES'],
@@ -1189,7 +1189,7 @@ client.on('interactionCreate', async interaction => {
 				channel_paidscreenshot = channel;
 				groupbuy.update({ channel_paidscreenshot: channel.id }, { where: { guild_id: interaction.guild.id } });
 			});
-
+			
 			let channel_paidamount;
 			await interaction.guild.channels.create(`$0.00/${currency(price).format(true)}`, {
 				type: 'GUILD_VOICE',
@@ -1224,10 +1224,26 @@ client.on('interactionCreate', async interaction => {
 				groupbuy.update({ channel_general: channel.id }, { where: { guild_id: interaction.guild.id } });
 			});
 
+			let channel_matchchat;
+			await interaction.guild.channels.create('match-chat', {
+				type: 'GUILD_TEXT',
+				position: 17,
+				parent: category_chat,
+				rateLimitPerUser: 10,
+				permissionOverwrites: [{
+					id: interaction.guild.roles.everyone,
+					allow: ['SEND_MESSAGES', 'ATTACH_FILES', 'VIEW_CHANNEL'],
+					deny: ['READ_MESSAGE_HISTORY'],
+				}],
+			}).then(async channel => {
+				channel_matchchat = channel;
+				groupbuy.update({ channel_matchchat: channel.id }, { where: { guild_id: interaction.guild.id } });
+			});
+
 			let channel_paidchat;
 			await interaction.guild.channels.create('paid-chat', {
 				type: 'GUILD_TEXT',
-				position: 17,
+				position: 18,
 				parent: category_chat,
 				permissionOverwrites: [{
 					id: interaction.guild.roles.everyone,
@@ -1237,10 +1253,10 @@ client.on('interactionCreate', async interaction => {
 					id: role_moderator,
 					allow: ['VIEW_CHANNEL'],
 				},
-				{
+				/*{
 					id: role_collector,
-					allow: ['VIEW_CHANNEL'],
-				}, {
+					allow: ['VIEW_CHANNEL'], */
+				{
 					id: role_paid,
 					allow: ['VIEW_CHANNEL'],
 				}],
@@ -1252,7 +1268,7 @@ client.on('interactionCreate', async interaction => {
 			let category_moderation;
 			await interaction.guild.channels.create('moderation', {
 				type: 'GUILD_CATEGORY',
-				position: 18,
+				position: 19,
 			}).then(async channel => {
 				groupbuy.update({ category_moderation: channel.id }, { where: { guild_id: interaction.guild.id } });
 				category_moderation = channel.id;
@@ -1260,28 +1276,6 @@ client.on('interactionCreate', async interaction => {
 
 			let channel_modchat;
 			await interaction.guild.channels.create('mod-chat', {
-				type: 'GUILD_TEXT',
-				position: 18,
-				parent: category_moderation,
-				permissionOverwrites: [{
-					id: interaction.guild.roles.everyone,
-					deny: ['VIEW_CHANNEL']
-				},
-				{
-					id: role_moderator,
-					allow: ['VIEW_CHANNEL'],
-				},
-				{
-					id: role_collector,
-					allow: ['VIEW_CHANNEL'],
-				}],
-			}).then(async channel => {
-				channel_modchat = channel;
-				groupbuy.update({ channel_modchat: channel.id }, { where: { guild_id: interaction.guild.id } });
-			});
-
-			let channel_botchat;
-			await interaction.guild.channels.create('bot-chat', {
 				type: 'GUILD_TEXT',
 				position: 19,
 				parent: category_moderation,
@@ -1292,10 +1286,30 @@ client.on('interactionCreate', async interaction => {
 				{
 					id: role_moderator,
 					allow: ['VIEW_CHANNEL'],
+				/*{
+					id: role_collector,
+					allow: ['VIEW_CHANNEL'], */
+				}],
+			}).then(async channel => {
+				channel_modchat = channel;
+				groupbuy.update({ channel_modchat: channel.id }, { where: { guild_id: interaction.guild.id } });
+			});
+
+			let channel_botchat;
+			await interaction.guild.channels.create('bot-chat', {
+				type: 'GUILD_TEXT',
+				position: 20,
+				parent: category_moderation,
+				permissionOverwrites: [{
+					id: interaction.guild.roles.everyone,
+					deny: ['VIEW_CHANNEL']
 				},
 				{
-					id: role_collector,
+					id: role_moderator,
 					allow: ['VIEW_CHANNEL'],
+				/*{
+					id: role_collector,
+					allow: ['VIEW_CHANNEL'], */
 				}]
 			}).then(async channel => {
 				channel_botchat = channel;
@@ -1305,7 +1319,7 @@ client.on('interactionCreate', async interaction => {
 			let channel_connections;
 			await interaction.guild.channels.create('connections', {
 				type: 'GUILD_TEXT',
-				position: 20,
+				position: 21,
 				parent: category_moderation,
 				permissionOverwrites: [{
 					id: interaction.guild.roles.cache.find(r => r.permissions.has('ADMINISTRATOR')),
@@ -1313,9 +1327,9 @@ client.on('interactionCreate', async interaction => {
 				}, {
 					id: role_moderator,
 					allow: ['VIEW_CHANNEL'],
-				}, {
+/*				}, {
 					id: role_collector,
-					allow: ['VIEW_CHANNEL'],
+					allow: ['VIEW_CHANNEL'], */
 				}, {
 					id: interaction.guild.roles.everyone,
 					deny: ['VIEW_CHANNEL'],
@@ -1415,7 +1429,6 @@ async function increment_user(member, type, amount) {
 	return user;
 }
 
-// TODO: set amount to negative if deleted message
 async function set_channel_paidamount(groupbuy, amount) {
 
 	let paid = currency(groupbuy.paid).value;
