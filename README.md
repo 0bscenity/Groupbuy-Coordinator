@@ -6,7 +6,7 @@
 ## Installation
 
 ```
-git clone https://github.com/MattrAus/Groupbuy-Coordinator.git
+git clone https://github.com/0bscenity/Groupbuy-Coordinator.git
 cd .\Groupbuy-Coordinator\
 npm install
 ```
