@@ -86,3 +86,4 @@ Once the bot is in your server, in chat type the following:
 # To-Do
 - Make channel which will show the percentage completed
 - Allow manually editing the total (eg. for fake donations)
+- Update the images in README.md
