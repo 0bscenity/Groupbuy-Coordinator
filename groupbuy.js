@@ -68,7 +68,7 @@ const Groupbuys = sequelize.define('groupbuy', {
 	role_moderator: Sequelize.STRING,
 	role_seller: Sequelize.STRING,
 	role_middleman: Sequelize.STRING,
-	//role_collector: Sequelize.STRING,
+	role_collector: Sequelize.STRING,
 	role_paid: Sequelize.STRING,
 	role_pledged: Sequelize.STRING,
 	role_nopledge: Sequelize.STRING,
