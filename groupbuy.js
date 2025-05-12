@@ -852,7 +852,7 @@ client.on('interactionCreate', async interaction => {
 			})
 			await wait(3000);
 
-			interaction.guild.setName(`cash rules everything around me (CREAM)`); //CHANGE THIS TO THE TITLE OF THE GB OR WHATEVER YOU WANT
+			interaction.guild.setName(`placeholder name`); //CHANGE THIS TO THE TITLE OF THE GB OR WHATEVER YOU WANT
 			interaction.guild.setVerificationLevel('LOW', 'Reduce Alts and Trolls');
 			interaction.guild.setDefaultMessageNotifications('ONLY_MENTIONS');
 
