@@ -725,17 +725,17 @@ client.on('interactionCreate', async interaction => {
 			// Create the text input components
 			const title = new TextInputComponent()
 				.setCustomId('title')
-				.setLabel("Title of the song/s")
+				.setLabel("Title of the song(s)")
 				.setStyle('SHORT')
 				.setValue(temp_title[interaction.guild.id] ? temp_title[interaction.guild.id] : '');
 			const artist = new TextInputComponent()
 				.setCustomId('artist')
-				.setLabel("Name of the artist/s")
+				.setLabel("Name of the artist(s)")
 				.setStyle('SHORT')
 				.setValue(temp_artist[interaction.guild.id] ? temp_artist[interaction.guild.id] : '');
 			const length = new TextInputComponent()
 				.setCustomId('length')
-				.setLabel("Length of the song/s")
+				.setLabel("Length of the song(s)")
 				.setStyle('SHORT')
 				.setValue(temp_length[interaction.guild.id] ? temp_length[interaction.guild.id] : '');
 			const price = new TextInputComponent()
@@ -852,7 +852,8 @@ client.on('interactionCreate', async interaction => {
 			})
 			await wait(3000);
 
-			interaction.guild.setName(`placeholder name`); //CHANGE THIS TO THE TITLE OF THE GB OR WHATEVER YOU WANT
+			interaction.guild.setName(`${artist} - ${title}`);
+//set name maunally	interaction.guild.setName(`placeholder name`);
 			interaction.guild.setVerificationLevel('LOW', 'Reduce Alts and Trolls');
 			interaction.guild.setDefaultMessageNotifications('ONLY_MENTIONS');
 
