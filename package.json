@@ -1,6 +1,6 @@
 {
   "name": "groupbuy-coordinator",
-  "version": "2.7.1",
+  "version": "2.7.3",
   "description": "Discord Bot to assist in multi-user donations for a singular item.",
   "main": "groupbuy.js",
   "scripts": {
